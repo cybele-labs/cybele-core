@@ -6,11 +6,11 @@ mod tests {
     fn encrypt_password() {
         let master_password: &str = "master password";
         let password: &str = "mail account password";
-        let encrypted_password = encrypt(Version::V1, master_password.as_bytes(), password.as_bytes(), Purpose::Password).unwrap();
+        let encrypted_password = encrypt(Version::V1, master_password, password.as_bytes(), Purpose::Password).unwrap();
         assert_ne!(encrypted_password.salt, [0u8; 32]);
         let decrypted_password = decrypt(
             Version::V1,
-            master_password.as_bytes(),
+            master_password,
             &encrypted_password.salt,
             encrypted_password.ciphertext.as_slice(),
             Purpose::Password,

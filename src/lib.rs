@@ -8,10 +8,10 @@ use rand::RngCore;
 use self::crypto::cipher;
 use self::crypto::keys;
 pub use self::crypto::keys::Purpose;
-pub use self::version::{get_version, Version};
+pub use self::version::Version;
 
 mod crypto;
-mod vault;
+pub mod vault;
 mod version;
 
 pub struct SaltedCiphertext {
@@ -36,19 +36,9 @@ pub fn decrypt(version: Version, password: &str, salt: &[u8], ciphertext: &[u8],
 #[cfg(test)]
 mod tests {
     use crate::crypto::keys::Purpose;
-    use crate::{get_version, Version};
+    use crate::Version;
 
     use super::*;
-
-    #[test]
-    fn decode_version() {
-        let v0 = get_version(0u8);
-        assert_eq!(v0, Some(Version::Test));
-        let v1 = get_version(1u8);
-        assert_eq!(v1, Some(Version::V1));
-        assert_eq!(get_version(2u8), None);
-        assert_eq!(get_version(255u8), None);
-    }
 
     #[test]
     fn encrypt_and_decrypt_data() {
