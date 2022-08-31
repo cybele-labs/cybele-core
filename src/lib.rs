@@ -8,16 +8,18 @@ use rand::RngCore;
 use self::crypto::cipher;
 use self::crypto::keys;
 pub use self::crypto::keys::Purpose;
-pub use self::crypto::version::{get_version, Version};
+pub use self::version::{get_version, Version};
 
 mod crypto;
+mod vault;
+mod version;
 
 pub struct SaltedCiphertext {
     pub salt: [u8; 32],
     pub ciphertext: Vec<u8>,
 }
 
-pub fn encrypt(version: Version, password: &[u8], plaintext: &[u8], purpose: Purpose) -> Option<SaltedCiphertext> {
+pub fn encrypt(version: Version, password: &str, plaintext: &[u8], purpose: Purpose) -> Option<SaltedCiphertext> {
     let mut csprng = OsRng {};
     let mut salt: [u8; 32] = [0u8; 32];
     csprng.fill_bytes(&mut salt);
@@ -26,7 +28,7 @@ pub fn encrypt(version: Version, password: &[u8], plaintext: &[u8], purpose: Pur
     Some(SaltedCiphertext { salt, ciphertext })
 }
 
-pub fn decrypt(version: Version, password: &[u8], salt: &[u8], ciphertext: &[u8], purpose: Purpose) -> Option<Vec<u8>> {
+pub fn decrypt(version: Version, password: &str, salt: &[u8], ciphertext: &[u8], purpose: Purpose) -> Option<Vec<u8>> {
     let encryption_key = keys::derive_key(version, password, salt, purpose)?;
     cipher::decrypt(encryption_key, ciphertext)
 }
@@ -34,7 +36,7 @@ pub fn decrypt(version: Version, password: &[u8], salt: &[u8], ciphertext: &[u8]
 #[cfg(test)]
 mod tests {
     use crate::crypto::keys::Purpose;
-    use crate::crypto::version::{get_version, Version};
+    use crate::{get_version, Version};
 
     use super::*;
 
@@ -50,7 +52,7 @@ mod tests {
 
     #[test]
     fn encrypt_and_decrypt_data() {
-        let password: &[u8] = b"master password";
+        let password: &str = "master password";
         let plaintext: &[u8] = b"secret message";
         let encrypted = encrypt(Version::Test, password, plaintext, Purpose::Password).unwrap();
         let decrypted = decrypt(
@@ -65,7 +67,7 @@ mod tests {
 
     #[test]
     fn generate_random_salt() {
-        let password: &[u8] = b"master password";
+        let password: &str = "master password";
         let plaintext: &[u8] = b"secret message";
         let encrypted1: SaltedCiphertext = encrypt(Version::Test, password, plaintext, Purpose::Password).unwrap();
         let encrypted2: SaltedCiphertext = encrypt(Version::Test, password, plaintext, Purpose::Password).unwrap();
@@ -74,12 +76,12 @@ mod tests {
 
     #[test]
     fn decryption_failure() {
-        let password: &[u8] = b"master password";
+        let password: &str = "master password";
         let plaintext: &[u8] = b"secret message";
         let encrypted: SaltedCiphertext = encrypt(Version::Test, password, plaintext, Purpose::Password).unwrap();
         let invalid_password = decrypt(
             Version::Test,
-            b"not my password",
+            "not my password",
             &encrypted.salt,
             encrypted.ciphertext.as_slice(),
             Purpose::Password,

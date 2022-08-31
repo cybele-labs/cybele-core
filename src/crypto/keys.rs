@@ -3,7 +3,7 @@ use argon2::{Algorithm, Argon2, Params};
 use hkdf::Hkdf;
 use sha2::Sha256;
 
-use crate::crypto::version::Version;
+use crate::Version;
 
 #[derive(Debug)]
 pub enum Purpose {
@@ -20,7 +20,7 @@ impl Purpose {
     }
 }
 
-pub fn derive_key(version: Version, password: &[u8], salt: &[u8], purpose: Purpose) -> Option<[u8; 32]> {
+pub fn derive_key(version: Version, password: &str, salt: &[u8], purpose: Purpose) -> Option<[u8; 32]> {
     // Argon2 parameters are frozen for each version.
     let params: Params = match version {
         Version::Test => Params::new(512, 1, 1, Some(32)).unwrap(),
@@ -35,7 +35,7 @@ pub fn derive_key(version: Version, password: &[u8], salt: &[u8], purpose: Purpo
         .map_err(|e| eprintln!("Invalid Argon2 salt: {}", e))
         .ok()?;
     let password_hash: Output = argon2
-        .hash_password(password, &salt_str)
+        .hash_password(password.as_bytes(), &salt_str)
         .map_err(|e| eprintln!("Cannot hash password: {}", e))
         .ok()?
         .hash?;
@@ -59,7 +59,7 @@ mod tests {
 
     #[test]
     fn derive_keys() {
-        let password: &[u8] = b"password";
+        let password: &str = "password";
         let salt: &[u8] = &hex::decode("0101010101010101010101010101010101010101010101010101010101010101").unwrap();
         let key1: [u8; 32] = derive_key(Version::Test, password, salt, Purpose::File).unwrap();
         let key2: [u8; 32] = derive_key(Version::Test, password, salt, Purpose::File).unwrap();
@@ -72,7 +72,7 @@ mod tests {
 
     #[test]
     fn invalid_salt() {
-        let password: &[u8] = b"password";
+        let password: &str = "password";
         let salt: &[u8] = &[0u8; 3];
         let result = derive_key(Version::Test, password, salt, Purpose::File);
         assert_eq!(result, None);
