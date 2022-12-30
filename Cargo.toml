@@ -2,5 +2,17 @@
 name = "cybele-core"
 version = "0.1.0"
 edition = "2021"
+authors = ["Bastien Teinturier"]
+license = "MIT"
+repository = "https://github.com/cybele-labs/cybele-core"
+description = "Cryptographic library for the cybele password manager."
 
 [dependencies]
+argon2 = "0.4.1"
+chacha20poly1305 = "0.10.0"
+hkdf = "0.12.3"
+rand = "0.8.5"
+sha2 = "0.10.1"
+
+[dev-dependencies]
+hex = "0.4"

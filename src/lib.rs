@@ -1,8 +1,12 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}
+#![crate_name = "cybele_core"]
+
+extern crate rand;
+
+use self::crypto::cipher;
+use self::crypto::keys;
+pub use self::crypto::keys::Purpose;
+pub use self::version::Version;
+
+mod crypto;
+pub mod vault;
+mod version;
