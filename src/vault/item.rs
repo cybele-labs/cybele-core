@@ -42,7 +42,8 @@ impl VaultItem {
         }
     }
 
-    pub(crate) fn serialize(&self) -> Vec<u8> {
+    #[allow(dead_code)]
+    fn serialize(&self) -> Vec<u8> {
         let mut w: Vec<u8> = Vec::with_capacity(self.size());
         self.serialize_into(&mut w);
         w
@@ -66,7 +67,8 @@ impl VaultItem {
         }
     }
 
-    pub(crate) fn deserialize(version: Version, bin: &[u8]) -> Option<VaultItem> {
+    #[allow(dead_code)]
+    fn deserialize(version: Version, bin: &[u8]) -> Option<VaultItem> {
         let mut r = BufReader::new(bin);
         VaultItem::deserialize_from(version, &mut r)
     }

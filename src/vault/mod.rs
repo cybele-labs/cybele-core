@@ -33,9 +33,23 @@ impl Vault {
     }
 
     pub fn add(&mut self, name: &str, value: &str, password: &str) -> Option<()> {
-        let item = VaultItem::encrypt(self.version, name, value, password)?;
-        self.items.push(item);
-        Some(())
+        VaultItem::encrypt(self.version, name, value, password).map(|item| self.items.push(item))
+    }
+
+    pub fn remove(&mut self, name: &str) {
+        self.items.retain(|i| i.name != name)
+    }
+
+    pub fn get(&self, name: &str, password: &str) -> Option<String> {
+        self.items
+            .iter()
+            .find(|i| i.name == name)
+            .and_then(|i| VaultItem::decrypt(i, password))
+            .and_then(|v| String::from_utf8(v).ok())
+    }
+
+    pub fn list(&self) -> Vec<String> {
+        self.items.iter().map(|i| i.name.clone()).collect()
     }
 
     pub fn serialize(&self, password: &str) -> Option<Vec<u8>> {
@@ -157,5 +171,28 @@ mod tests {
         let mut trailing = Vec::from(serialized);
         trailing.push(42u8);
         assert_eq!(Vault::deserialize(&trailing, "password").is_none(), true);
+    }
+
+    #[test]
+    fn add_remove_items() {
+        let mut vault = Vault {
+            version: Version::Test,
+            salt: [42u8; 32],
+            items: Vec::new(),
+        };
+        vault.add("item 1", "secret stuff", "password");
+        assert_eq!(vec!["item 1"], vault.list());
+        assert_eq!("secret stuff", vault.get("item 1", "password").unwrap());
+        assert_eq!(None, vault.get("item 1", "p4ssword"));
+        vault.remove("item 1");
+        assert_eq!(vault.list().len(), 0);
+        vault.add("item 1", "secret stuff", "password1");
+        vault.add("item 2", "secret stuff", "password2");
+        assert_eq!(vec!["item 1", "item 2"], vault.list());
+        vault.remove("item 2");
+        vault.remove("unknown item");
+        assert_eq!(vec!["item 1"], vault.list());
+        assert_eq!("secret stuff", vault.get("item 1", "password1").unwrap());
+        assert_eq!(None, vault.get("item 2", "password2"));
     }
 }
