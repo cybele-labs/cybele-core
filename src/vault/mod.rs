@@ -113,13 +113,10 @@ mod tests {
 
     #[test]
     fn serialize_deserialize_empty_vault() {
-        let vault = Vault {
-            version: Version::Test,
-            salt: [
-                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1,
-            ],
-            items: Vec::new(),
-        };
+        let mut vault = Vault::create(Some([
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1,
+        ]));
+        vault.version = Version::Test;
         let serialized = vault.serialize("file password").unwrap();
         assert_eq!(serialized.len(), 51); // don't forget the 16-byte trailing mac!
         assert_eq!(
@@ -134,11 +131,8 @@ mod tests {
 
     #[test]
     fn serialize_deserialize_vault() {
-        let mut vault = Vault {
-            version: Version::Test,
-            salt: [42u8; 32],
-            items: Vec::new(),
-        };
+        let mut vault = Vault::create(Some([42u8; 32]));
+        vault.version = Version::Test;
         vault.add("item 1", "secret stuff", "s3cr3t p4ss0rd");
         vault.add("item 2", "more secret stuff", "s3cr3t p4ss0rd");
         let serialized = vault.serialize("f1l3 p4ssw0rd").unwrap();
@@ -151,11 +145,8 @@ mod tests {
 
     #[test]
     fn deserialize_failure() {
-        let mut vault = Vault {
-            version: Version::Test,
-            salt: [42u8; 32],
-            items: Vec::new(),
-        };
+        let mut vault = Vault::create(Some([42u8; 32]));
+        vault.version = Version::Test;
         vault.add("item 1", "secret stuff", "s3cr3t p4ss0rd");
         vault.add("item 2", "more secret stuff", "another s3cr3t p4ss0rd");
         let serialized = vault.serialize("password").unwrap();
@@ -175,11 +166,8 @@ mod tests {
 
     #[test]
     fn add_remove_items() {
-        let mut vault = Vault {
-            version: Version::Test,
-            salt: [42u8; 32],
-            items: Vec::new(),
-        };
+        let mut vault = Vault::create(Some([42u8; 32]));
+        vault.version = Version::Test;
         vault.add("item 1", "secret stuff", "password");
         assert_eq!(vec!["item 1"], vault.list());
         assert_eq!("secret stuff", vault.get("item 1", "password").unwrap());
