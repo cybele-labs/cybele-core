@@ -30,9 +30,7 @@ pub fn derive_key(version: Version, password: &str, salt: &[u8], purpose: Purpos
 
     // We first derive a 256-bit master key based on the password and salt.
     let mut master_key: [u8; 32] = [0u8; 32];
-    let salt_str: SaltString = SaltString::b64_encode(salt)
-        .map_err(|e| eprintln!("Invalid Argon2 salt: {}", e))
-        .ok()?;
+    let salt_str: SaltString = SaltString::b64_encode(salt).map_err(|e| eprintln!("Invalid Argon2 salt: {}", e)).ok()?;
     let password_hash: Output = argon2
         .hash_password(password.as_bytes(), &salt_str)
         .map_err(|e| eprintln!("Cannot hash password: {}", e))

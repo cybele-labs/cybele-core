@@ -57,9 +57,7 @@ impl Vault {
             Version::Test | Version::V1 => {
                 let items_len: usize = self.items.iter().map(|i| i.size()).sum();
                 let mut items_writer: Vec<u8> = Vec::with_capacity(2 + items_len);
-                items_writer
-                    .write_all(&[(self.items.len() >> 8) as u8, self.items.len() as u8])
-                    .unwrap();
+                items_writer.write_all(&[(self.items.len() >> 8) as u8, self.items.len() as u8]).unwrap();
                 self.items.iter().for_each(|i| i.serialize_into(&mut items_writer));
                 // We encrypt the serialized items, including the length.
                 let encryption_key = keys::derive_key(self.version, password, &self.salt, Purpose::File)?;
@@ -113,9 +111,7 @@ mod tests {
 
     #[test]
     fn serialize_deserialize_empty_vault() {
-        let mut vault = Vault::create(Some([
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1,
-        ]));
+        let mut vault = Vault::create(Some([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1]));
         vault.version = Version::Test;
         let serialized = vault.serialize("file password").unwrap();
         assert_eq!(serialized.len(), 51); // don't forget the 16-byte trailing mac!
