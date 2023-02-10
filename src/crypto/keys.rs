@@ -24,7 +24,7 @@ pub fn derive_key(version: Version, password: &str, salt: &[u8], purpose: Purpos
     // Argon2 parameters are frozen for each version.
     let params: Params = match version {
         Version::Test => Params::new(512, 1, 1, Some(32)).unwrap(),
-        Version::V1 => Params::new(32_768, 128, 4, Some(32)).unwrap(),
+        Version::V1 => Params::new(32_768, 64, 4, Some(32)).unwrap(),
     };
     let argon2: Argon2 = Argon2::new(Algorithm::Argon2id, argon2::Version::V0x13, params);
 
