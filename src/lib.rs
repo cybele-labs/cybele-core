@@ -8,5 +8,6 @@ pub use self::crypto::keys::Purpose;
 pub use self::version::Version;
 
 mod crypto;
+pub mod password;
 pub mod vault;
 mod version;
