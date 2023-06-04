@@ -50,9 +50,8 @@ pub fn derive_key(version: Version, password: &str, salt: &[u8], purpose: Purpos
 
 #[cfg(test)]
 mod tests {
-    use hex;
-
     use super::*;
+    use crate::hex;
 
     #[test]
     fn derive_keys() {
