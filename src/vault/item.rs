@@ -110,6 +110,7 @@ impl VaultItem {
 
 #[cfg(test)]
 mod tests {
+    use crate::hex;
     use crate::vault::VaultItem;
     use crate::Version;
 
