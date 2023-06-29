@@ -2,7 +2,7 @@ use std::ops::Shr;
 
 /// Compute the SHA-256 hash of the given message, without making any heap allocation.
 /// Specification can be found here: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
-pub fn sha256(message: &[u8]) -> [u8; 32] {
+pub fn hash(message: &[u8]) -> [u8; 32] {
     let message_bytes_count = message.len();
     let message_bits_count = 8 * message_bytes_count;
     if message_bytes_count >= (2 << 61) {
@@ -47,23 +47,23 @@ pub fn sha256(message: &[u8]) -> [u8; 32] {
     let blocks_count = (message_bytes_count + pad_len + 8) / 64;
     for i in 0..blocks_count {
         // Parse the message block into 16 4-bytes words.
-        for j in 0..16 {
-            w[j] = 0;
+        for (j, wj) in w.iter_mut().enumerate().take(16) {
+            *wj = 0;
             for k in 0..4 {
                 let index = 64 * i + 4 * j + k;
                 if index < message_bytes_count {
-                    w[j] = w[j].wrapping_add((message[index] as u32) << (8 * (3 - k)));
+                    *wj = wj.wrapping_add((message[index] as u32) << (8 * (3 - k)));
                 } else if index == message_bytes_count {
                     // Padding starts with a '1' bit followed by '0' bits.
                     // We only support byte-aligned messages, so the first padding byte is 0x80.
-                    w[j] = w[j].wrapping_add((128 as u32) << (8 * (3 - k)));
+                    *wj = wj.wrapping_add(128_u32 << (8 * (3 - k)));
                 } else if index < message_bytes_count + pad_len {
                     // The message is then padded with '0' bytes.
                     // The message schedule is not impacted.
                 } else {
                     // Padding ends with the message bit size encoded using 64 bits (big-endian).
                     let padding_byte = (message_bits_count >> (64 - 8 * (index - message_bytes_count - pad_len + 1))) as u8;
-                    w[j] = w[j].wrapping_add((padding_byte as u32) << (8 * (3 - k)));
+                    *wj = wj.wrapping_add((padding_byte as u32) << (8 * (3 - k)));
                 }
             }
         }
@@ -125,22 +125,23 @@ pub fn sha256(message: &[u8]) -> [u8; 32] {
     result
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::hex;
 
     #[test]
     fn official_test_vectors() {
-        let h1 = hex::encode(sha256(b"abc"));
+        let h1 = hex::encode(hash(b"abc"));
         assert_eq!(h1, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
-        let h2 = hex::encode(sha256(b"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"));
+        let h2 = hex::encode(hash(b"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"));
         assert_eq!(h2, "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1");
     }
 
     #[test]
     fn hash_long_message() {
         let message = [42u8; 150000];
-        let h = sha256(&message);
+        let h = hash(&message);
         assert_eq!(hex::encode(h), "dc7dc699db6610842790da50372dca1eec1609d3016bcefebb1f89abff64b020");
     }
 
@@ -150,6 +151,6 @@ mod tests {
     //  - run cargo +nightly bench
     // #[bench]
     // fn bench_sha256(b: &mut Bencher) {
-    //     b.iter(|| sha256(b"roses are blue, cryptography is amazing, hash functions are hot, rust is fun"));
+    //     b.iter(|| hash(b"roses are blue, cryptography is amazing, hash functions are hot, rust is fun"));
     // }
 }
