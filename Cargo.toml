@@ -8,7 +8,7 @@ repository = "https://github.com/cybele-labs/cybele-core"
 description = "Cryptographic library for the cybele password manager."
 
 [dependencies]
-argon2 = "0.4.1"
+argon2 = "0.5.3"
 chacha20poly1305 = "0.10.0"
 hkdf = "0.12.3"
 rand = "0.8.5"
