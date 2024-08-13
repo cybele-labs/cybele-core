@@ -16,15 +16,12 @@ pub struct Vault {
 
 impl Vault {
     pub fn create(salt: Option<[u8; 32]>) -> Vault {
-        let salt: [u8; 32] = match salt {
-            Some(salt) => salt,
-            None => {
-                let mut csprng = OsRng {};
-                let mut salt: [u8; 32] = [0u8; 32];
-                csprng.fill_bytes(&mut salt);
-                salt
-            }
-        };
+        let salt: [u8; 32] = salt.unwrap_or_else(|| {
+            let mut csprng = OsRng {};
+            let mut salt: [u8; 32] = [0u8; 32];
+            csprng.fill_bytes(&mut salt);
+            salt
+        });
         Vault {
             version: Version::V1,
             salt,
