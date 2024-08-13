@@ -10,7 +10,4 @@ description = "Cryptographic library for the cybele password manager."
 [dependencies]
 argon2 = "0.5.3"
 chacha20poly1305 = "0.10.0"
-hkdf = "0.12.3"
 rand = "0.8.5"
-# TODO: remove sha2 once we're able to remove hkdf which depends on it
-sha2 = "0.10.1"

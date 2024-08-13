@@ -17,9 +17,14 @@ pub fn decrypt(key: [u8; 32], ciphertext: &[u8]) -> Option<Vec<u8>> {
 mod tests {
     use super::*;
 
+    use rand::rngs::OsRng;
+    use rand::RngCore;
+
     #[test]
     fn encrypt_decrypt() {
-        let key: [u8; 32] = [1u8; 32];
+        let mut csprng = OsRng {};
+        let mut key: [u8; 32] = [0u8; 32];
+        csprng.fill_bytes(&mut key);
         let message: &[u8] = b"this is very secret";
         let encrypted = encrypt(key, message).unwrap();
         let decrypted = decrypt(key, encrypted.as_slice()).unwrap();
